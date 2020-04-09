@@ -1,0 +1,19 @@
+{
+  "name": "mc_mappings",
+  "version": "1.0.0",
+  "description": "Apply mc mappings from mcpbots to java files",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "BriceFab",
+  "license": "ISC",
+  "dependencies": {
+    "csv-parse": "^4.8.8",
+    "csv-parser": "^2.3.2",
+    "fs": "0.0.1-security",
+    "globby": "^11.0.0",
+    "path": "^0.12.7",
+    "replace-in-file": "^5.0.2"
+  }
+}
