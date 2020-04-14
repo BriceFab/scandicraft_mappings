@@ -5,7 +5,7 @@ MAPPINGS: http://export.mcpbot.bspk.rs/
 /*
     Variables
 */
-let src_path = 'test';          //Chemin des sources java
+let src_path = 'java';          //Chemin des sources java
 
 //imports/requires
 const globby = require('globby');
@@ -21,12 +21,29 @@ const all_sources = listAllFilesAndDirs(src_path);
 console.log("Sources: " + all_sources.length);
 
 //replaces functions
-parseCSV('mcpbots/fields.csv', replaceFromCSV);
-parseCSV('mcpbots/methods.csv', replaceFromCSV);
-parseCSV('mcpbots/params.csv', replaceFromCSV);
+let replace_match = 0;
+
+applyMappings();
+
+function applyMappings() {
+    parseCSV('mcpbots/fields.csv', replaceFromCSV, () => {
+        parseCSV('mcpbots/methods.csv', replaceFromCSV, () => {
+            parseCSV('mcpbots/params.csv', replaceFromCSV, () => {
+                if (replace_match != 0) {
+                    console.log('all replace match ' + replace_match);
+                    replace_match = 0;  //reset value
+
+                    applyMappings();
+                } else {
+                    console.log("terminate.");
+                }
+            });
+        });
+    });
+}
 
 //Functions
-function replaceFromCSV(file, csv_array) {
+function replaceFromCSV(file, csv_array, callback) {
     let from = csv_array.map(item => {
         if (file.includes('params.csv')) {
             return item.param
@@ -42,19 +59,23 @@ function replaceFromCSV(file, csv_array) {
         console.error("problem when parsing csv");
     } else {
         const func_results = replaceInSources(all_sources, from, to);
-        console.log("functions replace: " + countResults(func_results));
+        const nbr_results = countResults(func_results)
+        console.log("functions replace: " + nbr_results.toString());
+        replace_match += nbr_results;
     }
+
+    callback();
 }
 
-async function parseCSV(file, callback) {
+function parseCSV(file, callback, onEnd) {
     let results = [];
 
-    await fs.createReadStream(file)
+    fs.createReadStream(file)
         .pipe(csv_parser())
         .on('data', (data) => results.push(data))
         .on('end', () => {
             console.log("finish read " + file);
-            callback(file, results);
+            callback(file, results, onEnd);
         });
 }
 
